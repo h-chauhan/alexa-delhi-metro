@@ -2,6 +2,10 @@
 
 Built with :heart: and Node.Js
 
+* [Privacy Policy](/privacy-policy/)
+
+* [Terms of Use](/terms-of-use/)
+
 ## Setup
 
 ```
