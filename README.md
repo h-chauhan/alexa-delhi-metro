@@ -2,9 +2,9 @@
 
 Built with :heart: and Node.Js
 
-* [Privacy Policy](/privacy-policy/)
+* [Privacy Policy](https://h-chauhan.github.io/alexa-delhi-metro/privacy-policy)
 
-* [Terms of Use](/terms-of-use/)
+* [Terms of Use](https://h-chauhan.github.io/alexa-delhi-metro/terms-of-use)
 
 ## Setup
 
