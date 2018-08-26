@@ -16,7 +16,7 @@ getStations = function () {
             // Get station list
             let stations = [];
             $('select').find('option').each((i, item) => stations.push([$(item).val(), $(item).text()]));
-            console.log(stations.length + " loaded!!!");
+            console.log(stations.length + " stations loaded!!!");
             resolve(stations);
         }).catch(function (err) {
             // REQUEST FAILED: ERROR OF SOME KIND
@@ -26,15 +26,18 @@ getStations = function () {
     });
 };
 
-var checkIfStationExist = function (station) {
+var checkIfStationExist = function (station1, station2) {
     return new Promise((resolve) => {
         getStations().then(stations => {
+            let f1 = undefined, f2 = undefined;
             for (pair of stations) {
-                if (pair[1].toLowerCase().indexOf(station.toLowerCase()) != -1) {
-                    resolve(pair);
+                if (pair[1].toLowerCase().indexOf(station1.toLowerCase()) != -1) {
+                    f1 = pair;
+                } else if (pair[1].toLowerCase().indexOf(station2.toLowerCase()) != -1) {
+                    f2 = pair;
                 }
             }
-            resolve(undefined);
+            resolve([f1, f2]);
         });
     });
 };

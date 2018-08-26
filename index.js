@@ -1,3 +1,5 @@
+var service = require ('./service');
+
 // 1. Text strings =====================================================================================================
 //    Modify these strings and messages to change the behavior of your Lambda 
 //    function
@@ -6,28 +8,7 @@ const languageStrings = {
     'en': {
         'translation': {
             'WELCOME': "Welcome to Delhi Metro Guide!",
-            'HELP': "Say Route to know route, time, token fare and time of travel between two stations.",
             'STOP': "Okay, see you next time!"
-        }
-    }
-};
-
-const data = {
-    "stations": {
-        "rithala": {
-            "id": 1,
-            "line": "red",
-            "line_no": 1
-        },
-        "rohini west": {
-            "id": 2,
-            "line": "red",
-            "line_no": 2,
-        },
-        "samaypur badli": {
-            "id": 3,
-            "line": "yellow",
-            "line_no": 1
         }
     }
 };
@@ -48,18 +29,46 @@ exports.handler = function (event, context, callback) {
 
 const handlers = {
     'LaunchRequest': function () {
-        let say = this.t('WELCOME') + ' ' + this.t('HELP');
+        let say = this.t('WELCOME');
         this.response.speak(say).listen(say);
         this.emit(':responseReady');
     },
 
-    'RouteInfoIntent': function () {
-        let fromStation = this.event.request.intent.slots.fromStation.value;
-        let toStation = this.event.request.intent.slots.toStation.value;
+    'FareInfoIntent': function () {
+        let fromStationSlot = this.event.request.intent.slots.fromStation.value;
+        let toStationSlot = this.event.request.intent.slots.toStation.value;
+        let say;
+        service.checkIfStationExist(fromStationSlot, toStationSlot).then(res => {
+            if (res[0] == undefined || res[1] == undefined) {
+                say = "Sorry, I couldn't get that. Please try again!"
+            } else {
+                service.getFare(res[0], res[1]).then(fare => {
+                    console.log("Fare: " + fare);
+                    say = "The token fare between stations " + fromStationSlot + " and " + toStationSlot + " is Rupees " + fare;
+                });
+            }
+        });
+        this.response.speak(say);
+        this.emit(':responseReady');
+    },
 
-        let say = "To reach New Delhi station from Rithala station, board Red line towards Dilshad Garden and deboard" +
-            " at Kashmiri Gate. Then board Yellow line towards HUDA City Center and deboard at New Delhi Metro Station." +
-            " Your travel will take 38 minutes with 16 stations, 1 interchange and token fare of 30 rupees."
+    'RouteInfoIntent': function () {
+        let fromStationSlot = this.event.request.intent.slots.fromStation.value;
+        let toStationSlot = this.event.request.intent.slots.toStation.value;
+        service.checkIfStationExist(fromStationSlot, toStationSlot).then(res => {
+            if (res[0] == undefined || res[1] == undefined) {
+                say = "Sorry, I couldn't get that. Please try again!"
+            } else {
+                service.getFare(res[0], res[1]).then(interchange => {
+                    console.log("Interchange: " + interchange);
+                    say = "Board the metro at " + fromStationSlot + " , then";
+                    for (i of interchange) {
+                        say += " interchange at " + i + ", then";
+                    }
+                    say += " deboard at " + toStationSlot;
+                });
+            }
+        });
         this.response.speak(say);
         this.emit(':responseReady');
     },
