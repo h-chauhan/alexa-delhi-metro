@@ -1,4 +1,4 @@
-var service = require ('./service');
+require('dotenv').config()
 
 // 1. Text strings =====================================================================================================
 //    Modify these strings and messages to change the behavior of your Lambda 
@@ -18,10 +18,13 @@ const SKILL_NAME = "Delhi Metro Guide";
 // 2. Skill Code =======================================================================================================
 
 const Alexa = require('alexa-sdk');
+const service = require ('./service');
+
+const APP_ID = process.env.SKILL_ID;
 
 exports.handler = function (event, context, callback) {
     let alexa = Alexa.handler(event, context);
-
+    alexa.APP_ID = APP_ID;
     alexa.resources = languageStrings;
     alexa.registerHandlers(handlers);
     alexa.execute();
@@ -41,36 +44,41 @@ const handlers = {
         service.checkIfStationExist(fromStationSlot, toStationSlot).then(res => {
             if (res[0] == undefined || res[1] == undefined) {
                 say = "Sorry, I couldn't get that. Please try again!"
+                this.response.speak(say);
+                this.emit(':responseReady');
             } else {
                 service.getFare(res[0], res[1]).then(fare => {
                     console.log("Fare: " + fare);
                     say = "The token fare between stations " + fromStationSlot + " and " + toStationSlot + " is Rupees " + fare;
+                    this.response.speak(say);
+                    this.emit(':responseReady');
                 });
             }
         });
-        this.response.speak(say);
-        this.emit(':responseReady');
     },
 
     'RouteInfoIntent': function () {
         let fromStationSlot = this.event.request.intent.slots.fromStation.value;
         let toStationSlot = this.event.request.intent.slots.toStation.value;
+        let say;
         service.checkIfStationExist(fromStationSlot, toStationSlot).then(res => {
             if (res[0] == undefined || res[1] == undefined) {
-                say = "Sorry, I couldn't get that. Please try again!"
+                say = "Sorry, I couldn't get that. Please try again!";
+                this.response.speak(say);
+                this.emit(':responseReady');
             } else {
-                service.getFare(res[0], res[1]).then(interchange => {
+                service.getRoute(res[0], res[1]).then(interchange => {
                     console.log("Interchange: " + interchange);
                     say = "Board the metro at " + fromStationSlot + " , then";
                     for (i of interchange) {
                         say += " interchange at " + i + ", then";
                     }
                     say += " deboard at " + toStationSlot;
+                    this.response.speak(say);
+                    this.emit(':responseReady');
                 });
             }
         });
-        this.response.speak(say);
-        this.emit(':responseReady');
     },
 
     'AMAZON.HelpIntent': function () {
